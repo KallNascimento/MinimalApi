@@ -1,20 +1,12 @@
 using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
-var app = builder.Build();
-
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
-
 builder.Services.AddDbContext<AppDbContext>(opt => opt.UseInMemoryDatabase("TasksDB"));
 
-if (app.Environment.IsDevelopment())
-{
-    app.UseSwagger();
-    app.UseSwaggerUI();
-}
-
-app.MapGet("/", () => "Hello World!");
+var app = builder.Build();
+app.UseHttpsRedirection();
 app.MapGet("/tasks", async (AppDbContext db) => await db.Tasks.ToListAsync());
 app.MapPost("/tasks", async (Task task, AppDbContext db) =>
 {
@@ -23,8 +15,13 @@ app.MapPost("/tasks", async (Task task, AppDbContext db) =>
     return Results.Created($"/tasks/{task.Id}", task);
 });
 
-app.Run();
+if (app.Environment.IsDevelopment())
+{
+    app.UseSwagger();
+    app.UseSwaggerUI();
+}
 
+app.Run();
 
 class Task
 {
